@@ -2,83 +2,35 @@ image: hashicorp/terraform:latest
 
 pipelines:
   branches:
-    # Deploy to DEV when pushing to any branch except `test` or `master`
-    '{**}':
+    "{feature/*,bugfix/*,develop}":
       - step:
-          name: Plan Infrastructure (Dev)
+          name: Deploy Infrastructure (Dev)
           caches:
             - terraform
           script:
-            - export AWS_ACCESS_KEY_ID=$DEV_AWS_ACCESS_KEY_ID
-            - export AWS_SECRET_ACCESS_KEY=$DEV_AWS_SECRET_ACCESS_KEY
+            - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+            - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
             - export AWS_DEFAULT_REGION="us-east-1"
-            - cd environments/dev
-            - terraform init
-            - terraform plan -out=tfplan
-          artifacts:
-            - environments/dev/tfplan
-      - step:
-          name: Apply Infrastructure (Dev)
-          trigger: manual
-          caches:
-            - terraform
-          script:
-            - export AWS_ACCESS_KEY_ID=$DEV_AWS_ACCESS_KEY_ID
-            - export AWS_SECRET_ACCESS_KEY=$DEV_AWS_SECRET_ACCESS_KEY
-            - export AWS_DEFAULT_REGION="us-east-1"
-            - cd environments/dev
-            - terraform apply tfplan
+            - ./scripts/deploy.sh dev
 
-    # Deploy to STAGE when merging to the `test` branch
     test:
       - step:
-          name: Plan Infrastructure (Stage)
+          name: Deploy Infrastructure (Stage)
           caches:
             - terraform
           script:
-            - export AWS_ACCESS_KEY_ID=$STAGE_AWS_ACCESS_KEY_ID
-            - export AWS_SECRET_ACCESS_KEY=$STAGE_AWS_SECRET_ACCESS_KEY
+            - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+            - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
             - export AWS_DEFAULT_REGION="us-east-1"
-            - cd environments/stage
-            - terraform init
-            - terraform plan -out=tfplan
-          artifacts:
-            - environments/stage/tfplan
-      - step:
-          name: Apply Infrastructure (Stage)
-          trigger: manual
-          caches:
-            - terraform
-          script:
-            - export AWS_ACCESS_KEY_ID=$STAGE_AWS_ACCESS_KEY_ID
-            - export AWS_SECRET_ACCESS_KEY=$STAGE_AWS_SECRET_ACCESS_KEY
-            - export AWS_DEFAULT_REGION="us-east-1"
-            - cd environments/stage
-            - terraform apply tfplan
+            - ./scripts/deploy.sh stage
 
-    # Deploy to PROD when merging to the `master` branch
     master:
       - step:
-          name: Plan Infrastructure (Prod)
+          name: Deploy Infrastructure (Prod)
           caches:
             - terraform
           script:
-            - export AWS_ACCESS_KEY_ID=$PROD_AWS_ACCESS_KEY_ID
-            - export AWS_SECRET_ACCESS_KEY=$PROD_AWS_SECRET_ACCESS_KEY
+            - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+            - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
             - export AWS_DEFAULT_REGION="us-east-1"
-            - cd environments/prod
-            - terraform init
-            - terraform plan -out=tfplan
-          artifacts:
-            - environments/prod/tfplan
-      - step:
-          name: Apply Infrastructure (Prod)
-          trigger: manual
-          caches:
-            - terraform
-          script:
-            - export AWS_ACCESS_KEY_ID=$PROD_AWS_ACCESS_KEY_ID
-            - export AWS_SECRET_ACCESS_KEY=$PROD_AWS_SECRET_ACCESS_KEY
-            - export AWS_DEFAULT_REGION="us-east-1"
-            - cd environments/prod
-            - terraform apply tfplan
+            - ./scripts/deploy.sh prod
