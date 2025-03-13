@@ -43,3 +43,7 @@ module "glue" {
   max_retries     = var.glue_max_retries
   timeout         = var.glue_timeout
 }
+
+module "iam" {
+  source = "../../modules/iam"
+}

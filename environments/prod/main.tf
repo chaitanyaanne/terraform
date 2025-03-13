@@ -34,3 +34,7 @@ module "glue" {
   role_arn        = var.glue_role_arn
   script_location = var.glue_script_location
 }
+
+module "iam" {
+  source = "../../modules/iam"
+}

@@ -1,6 +1,6 @@
 resource "aws_glue_job" "glue_job" {
   name     = var.job_name
-  role_arn = var.role_arn
+  role_arn = module.iam.glue_role_arn
 
   command {
     script_location = var.script_location
