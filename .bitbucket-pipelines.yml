@@ -1,58 +1,84 @@
 image: hashicorp/terraform:latest
 
 pipelines:
-  default:
-    - step:
-        name: Plan Infrastructure (Dev)
-        caches:
-          - terraform
-        script:
-          - cd environments/dev
-          - terraform init
-          - terraform plan -out=tfplan
-        artifacts:
-          - environments/dev/tfplan
-    - step:
-        name: Apply Infrastructure (Dev)
-        trigger: manual
-        caches:
-          - terraform
-        script:
-          - cd environments/dev
-          - terraform apply tfplan
-    - step:
-        name: Plan Infrastructure (Stage)
-        caches:
-          - terraform
-        script:
-          - cd environments/stage
-          - terraform init
-          - terraform plan -out=tfplan
-        artifacts:
-          - environments/stage/tfplan
-    - step:
-        name: Apply Infrastructure (Stage)
-        trigger: manual
-        caches:
-          - terraform
-        script:
-          - cd environments/stage
-          - terraform apply tfplan
-    - step:
-        name: Plan Infrastructure (Prod)
-        caches:
-          - terraform
-        script:
-          - cd environments/prod
-          - terraform init
-          - terraform plan -out=tfplan
-        artifacts:
-          - environments/prod/tfplan
-    - step:
-        name: Apply Infrastructure (Prod)
-        trigger: manual
-        caches:
-          - terraform
-        script:
-          - cd environments/prod
-          - terraform apply tfplan
+  branches:
+    # Deploy to DEV when pushing to any branch except `test` or `master`
+    '{**}':
+      - step:
+          name: Plan Infrastructure (Dev)
+          caches:
+            - terraform
+          script:
+            - export AWS_ACCESS_KEY_ID=$DEV_AWS_ACCESS_KEY_ID
+            - export AWS_SECRET_ACCESS_KEY=$DEV_AWS_SECRET_ACCESS_KEY
+            - export AWS_DEFAULT_REGION="us-east-1"
+            - cd environments/dev
+            - terraform init
+            - terraform plan -out=tfplan
+          artifacts:
+            - environments/dev/tfplan
+      - step:
+          name: Apply Infrastructure (Dev)
+          trigger: manual
+          caches:
+            - terraform
+          script:
+            - export AWS_ACCESS_KEY_ID=$DEV_AWS_ACCESS_KEY_ID
+            - export AWS_SECRET_ACCESS_KEY=$DEV_AWS_SECRET_ACCESS_KEY
+            - export AWS_DEFAULT_REGION="us-east-1"
+            - cd environments/dev
+            - terraform apply tfplan
+
+    # Deploy to STAGE when merging to the `test` branch
+    test:
+      - step:
+          name: Plan Infrastructure (Stage)
+          caches:
+            - terraform
+          script:
+            - export AWS_ACCESS_KEY_ID=$STAGE_AWS_ACCESS_KEY_ID
+            - export AWS_SECRET_ACCESS_KEY=$STAGE_AWS_SECRET_ACCESS_KEY
+            - export AWS_DEFAULT_REGION="us-east-1"
+            - cd environments/stage
+            - terraform init
+            - terraform plan -out=tfplan
+          artifacts:
+            - environments/stage/tfplan
+      - step:
+          name: Apply Infrastructure (Stage)
+          trigger: manual
+          caches:
+            - terraform
+          script:
+            - export AWS_ACCESS_KEY_ID=$STAGE_AWS_ACCESS_KEY_ID
+            - export AWS_SECRET_ACCESS_KEY=$STAGE_AWS_SECRET_ACCESS_KEY
+            - export AWS_DEFAULT_REGION="us-east-1"
+            - cd environments/stage
+            - terraform apply tfplan
+
+    # Deploy to PROD when merging to the `master` branch
+    master:
+      - step:
+          name: Plan Infrastructure (Prod)
+          caches:
+            - terraform
+          script:
+            - export AWS_ACCESS_KEY_ID=$PROD_AWS_ACCESS_KEY_ID
+            - export AWS_SECRET_ACCESS_KEY=$PROD_AWS_SECRET_ACCESS_KEY
+            - export AWS_DEFAULT_REGION="us-east-1"
+            - cd environments/prod
+            - terraform init
+            - terraform plan -out=tfplan
+          artifacts:
+            - environments/prod/tfplan
+      - step:
+          name: Apply Infrastructure (Prod)
+          trigger: manual
+          caches:
+            - terraform
+          script:
+            - export AWS_ACCESS_KEY_ID=$PROD_AWS_ACCESS_KEY_ID
+            - export AWS_SECRET_ACCESS_KEY=$PROD_AWS_SECRET_ACCESS_KEY
+            - export AWS_DEFAULT_REGION="us-east-1"
+            - cd environments/prod
+            - terraform apply tfplan
