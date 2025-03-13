@@ -1,0 +1,58 @@
+image: hashicorp/terraform:latest
+
+pipelines:
+  default:
+    - step:
+        name: Plan Infrastructure (Dev)
+        caches:
+          - terraform
+        script:
+          - cd environments/dev
+          - terraform init
+          - terraform plan -out=tfplan
+        artifacts:
+          - environments/dev/tfplan
+    - step:
+        name: Apply Infrastructure (Dev)
+        trigger: manual
+        caches:
+          - terraform
+        script:
+          - cd environments/dev
+          - terraform apply tfplan
+    - step:
+        name: Plan Infrastructure (Stage)
+        caches:
+          - terraform
+        script:
+          - cd environments/stage
+          - terraform init
+          - terraform plan -out=tfplan
+        artifacts:
+          - environments/stage/tfplan
+    - step:
+        name: Apply Infrastructure (Stage)
+        trigger: manual
+        caches:
+          - terraform
+        script:
+          - cd environments/stage
+          - terraform apply tfplan
+    - step:
+        name: Plan Infrastructure (Prod)
+        caches:
+          - terraform
+        script:
+          - cd environments/prod
+          - terraform init
+          - terraform plan -out=tfplan
+        artifacts:
+          - environments/prod/tfplan
+    - step:
+        name: Apply Infrastructure (Prod)
+        trigger: manual
+        caches:
+          - terraform
+        script:
+          - cd environments/prod
+          - terraform apply tfplan

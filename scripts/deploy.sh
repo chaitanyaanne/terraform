@@ -1,7 +1,16 @@
 #!/bin/bash
 
+# Check if environment argument is provided
+if [ -z "$1" ]; then
+  echo "Usage: ./deploy.sh <environment>"
+  echo "Environment must be one of: dev, stage, prod"
+  exit 1
+fi
+
+ENVIRONMENT=$1
+
 # Navigate to the Terraform environment directory
-cd terraform/environments/dev
+cd environments/$ENVIRONMENT
 
 # Initialize Terraform
 terraform init
